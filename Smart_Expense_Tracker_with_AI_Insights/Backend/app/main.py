@@ -1,6 +1,6 @@
 from fastapi import FastAPI,HTTPException
 from models import Tranjuction
-from database import Tranjuction_collection
+from Smart_Expense_Tracker_with_AI_Insights.Backend.app.database import Tranjuction_collection
 from fastapi.middleware.cors import CORSMiddleware
 
 
