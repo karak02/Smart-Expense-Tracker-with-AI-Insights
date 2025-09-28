@@ -1,3 +1,6 @@
 FastApi
 uvicorn
 motor
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
