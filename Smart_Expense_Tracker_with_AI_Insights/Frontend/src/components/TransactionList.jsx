@@ -1,5 +1,6 @@
-import React,{useState,useEffect} from 'react'
+import React, { useState, useEffect } from 'react';
 import TransactionForm from './TransactionFrom';
+import { getTransactions, deleteTransaction } from '../api/transactionApi';
 
 const TransactionList = () => {
 
@@ -7,36 +8,27 @@ const [transactions,setTransactions]=useState([])
 const [edit,setEdit]= useState(null);
 const [showForm,setShowForm]=useState(false);
 
-useEffect(()=>{
-  //fetch transactions from backend
-  const fetchTramsactions = async () =>{
-    try{
-      const response = await fetch("http://localhost:8000/api/transactions/"); // FastAPI endpoint
-      const data = await response.json();
-      setTransactions(data);  // store in state
-    }catch(error){
-      console.error("Error fetching transactions:",error);
+useEffect(() => {
+  const fetchTransactions = async () => {
+    try {
+      const response = await getTransactions();
+      setTransactions(response.data);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
     }
   };
-  fetchTramsactions();
-},[])
+  fetchTransactions();
+}, []);
 
 
-const handeldelete = async(id)=>{
-        try{
-            const res = await fetch(`http://localhost:8000/api/transactions/${id}`,{
-                method:"DELETE",
-            })
-            if(!res.ok){
-                throw new Error("Failed to delete")
-            }
-
-            //remove from ui
-              setTransactions(transactions.filter((t)=>t.id !== id));
-        }catch{
-          alert("Something went wrong while deleting");
-        }
-    }
+const handleDelete = async (id) => {
+  try {
+    await deleteTransaction(id);
+    setTransactions(transactions.filter((t) => t.id !== id));
+  } catch (error) {
+    alert('Something went wrong while deleting');
+  }
+};
 
 
 const handleFormSuccess = (save) =>{
@@ -99,7 +91,7 @@ const handleFormSuccess = (save) =>{
                 <button onClick={()=>{setEdit(tx); setShowForm(true)}} className="inline-block rounded bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-700">
                   Update
                 </button>
-                <button onClick={()=>handeldelete(tx.id)} className="inline-block rounded bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-700">
+<button onClick={() => handleDelete(tx.id)} className="inline-block rounded bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-700">
                   Delete
                 </button>
               </td>

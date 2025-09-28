@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
+import { addTransaction, updateTransaction } from '../api/transactionApi';
 
 
 
@@ -35,46 +36,29 @@ const TransactionFrom = ({ transaction = null, onSuccess, onCancel }) => {
         });
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const url = transaction ? `http://localhost:8000/api/transactions/${transaction.id}`
-            : "http://localhost:8000/transations/";
-             
-                const method= transaction ?"PUT" : "POST";
-                const response = await fetch(url,{
-                    method,
-                     headers: {
-                    "Content-Type": "application/json" // tell backend we’re sending JSON
-                },
-                body: JSON.stringify(formData) // convert form data(js object) to JSON
-                })
-    
-            if (!response.ok) {
-                throw new Error("Failed to add transaction")
-            }
-            // 🔹 Get the created transaction back from server (as JSON)
-            const data = await response.json();
-            console.log("Transaction added:", data)
-
-             // 🔹 Tell parent component about new/updated transaction
-            onSuccess && onSuccess(data);
-
-            // Reset form
-            if(!transaction){
-                 setFormData({
-                date: "",
-                description: "",
-                category: "",
-                is_income: false,
-                amount: ""
-            })
-            }
-           
-        } catch (error) {
-            console.error("Error adding transaction:", error)
-        }
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    let response;
+    if (transaction) {
+      response = await updateTransaction(transaction.id, formData);
+    } else {
+      response = await addTransaction(formData);
     }
+    onSuccess && onSuccess(response.data);
+    if (!transaction) {
+      setFormData({
+        date: '',
+        description: '',
+        category: '',
+        is_income: false,
+        amount: '',
+      });
+    }
+  } catch (error) {
+    console.error('Error saving transaction:', error);
+  }
+};
 
 
     return (
