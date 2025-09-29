@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routes import transaction
+from app.routes import transaction,auth
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -21,5 +21,8 @@ app.add_middleware(
 async def read_root():
     return {"welcome to Ankon's apis🚀🚀😎"}
 
+
+# Register routers
+app.include_router(auth.router, prefix="/api")    
 app.include_router(transaction.router, prefix="/api")
 

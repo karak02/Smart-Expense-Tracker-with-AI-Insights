@@ -1,26 +1,29 @@
-from fastapi import APIRouter , HTTPException
+from fastapi import APIRouter, Depends , HTTPException
 from bson import ObjectId
+from app.utils.auth import get_current_user
 from app.services.transaction_service import Transaction_collection
 from app.models.transaction import TranjuctionIn,TranjuctionOut
 
 router = APIRouter()
 
 @router.post("/transactions/",response_model=TranjuctionOut)
-async def create_transaction(Transaction: TranjuctionIn):
-    add = await Transaction_collection.insert_one(Transaction.dict())  
+async def create_transaction(Transaction: TranjuctionIn, current_user=Depends(get_current_user)):
     new_transation = Transaction.dict()
-    new_transation["id"] = str(add.inserted_id)
-    return new_transation
+    new_transation["user_id"] = str(current_user["_id"])
+    add = await Transaction_collection.insert_one(new_transation)  
+    return {**new_transation,"id":str(add.inserted_id)}
 
 
 @router.get("/transactions/", response_model=list[TranjuctionOut])
-async def get_transactions():
+async def get_transactions(current_user=Depends(get_current_user)):
     # Fetch all documents (limit can be added later)
-    results = await Transaction_collection.find().to_list(1000)
-    for t in results:
+    results = Transaction_collection.find({"user_id":str(current_user["_id"])})
+    array = []
+    async for t in results:
         t["id"]= str(t["_id"])
         del t["_id"] # remove original ObjectId (not JSON serializable)
-    return results
+        array.append(t)
+    return array
 
 @router.get("/transations/{id}", response_model=TranjuctionOut)
 async def get_one_transaction(id:str):
